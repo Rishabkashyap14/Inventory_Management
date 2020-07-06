@@ -1,0 +1,69 @@
+DELIMITER $$
+CREATE TRIGGER storage_violation
+AFTER UPDATE ON STORAGE
+FOR EACH ROW BEGIN
+IF(NEW.Stored_Qty < 50) THEN
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Storage shortage, order more items';
+END IF;
+END$$
+DELIMITER;
+
+
+CREATE TRIGGER exceed_date 
+BEFORE INSERT ON ORDERS 
+FOR EACH ROW BEGIN 
+IF (NEW.Request_date > CURDATE()) THEN 
+SIGNAL SQLSTATE '45002' SET MESSAGE_TEXT = 'Invalid date entered'; 
+END IF; 
+END$$
+
+INSERT INTO ORDERS 
+VALUES (76543 , 946 , 100 , NULL , '2020-08-03' , 814657 , 7001568165);
+
+
+1) Simple query to check all request dates of respective items being shipped
+SELECT O.Request_date, I.Item_name
+FROM ITEMS I,
+ORDERS O RIGHT OUTER JOIN SHIPMENT AS H
+ON O.Order_ID = H.Order_ID
+WHERE I.Item_ID = O.Item_ID;
+
+
+2) Give the item names of all ordered items in ascending alphabetical order.
+SELECT I.Item_name
+FROM ITEMS I, ORDERS O
+WHERE I.Item_ID = O.Item_ID
+GROUP BY O.Order_ID
+ORDER BY 1;
+
+
+
+3) To show all locations which hold more than 300 units of any item
+SELECT L.Location
+FROM LOCATIONS L, Monitors M, STORAGE S
+WHERE M.Loc_ID = L.Loc_ID AND
+M.S_ID = S.S_ID AND
+S.Stored_Qty > 300
+GROUP BY L.Loc_ID;
+
+
+
+4) SQL Query to show which admin is responsible for taking care of which location
+SELECT A.A_Name, L.Location
+FROM ADMIN A, LOCATIONS L
+WHERE EXISTS
+(SELECT *
+FROM Monitors M
+WHERE M.A_ID = A.A_ID AND
+M.Loc_ID = L.Loc_ID);
+
+
+
+
+5) Select all item names which are not present in the inventory.
+SELECT I.Item_name
+FROM ITEMS I
+WHERE NOT EXISTS(
+SELECT *
+FROM INVENTORY K
+WHERE I.Item_ID = K.Item_ID);

@@ -1,0 +1,261 @@
+CREATE TABLE ADMIN
+(
+  A_ID NUMERIC(10) NOT NULL,
+  A_Name CHAR(20) NOT NULL,
+  Email VARCHAR(50) NOT NULL,
+  CONSTRAINT chk_email CHECK (Email LIKE '%_@__%.__%'),
+  Address VARCHAR(100) NOT NULL,
+  Ph_no NUMERIC(10) NOT NULL, 
+  PRIMARY KEY (A_ID)
+);
+
+CREATE TABLE ITEMS
+(
+  Item_ID NUMERIC(3) NOT NULL,
+  Item_name CHAR(20) NOT NULL,
+  Description VARCHAR(50) NOT NULL,
+  A_ID NUMERIC(10) NOT NULL,
+  PRIMARY KEY (Item_ID),
+  CONSTRAINT fk_A_ID
+  	FOREIGN KEY (A_ID) REFERENCES ADMIN(A_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+);
+
+CREATE TABLE INVENTORY
+(
+  Inventory_ID NUMERIC(4) NOT NULL,
+  Item_ID NUMERIC(3) NOT NULL,
+  Quantity INT NOT NULL CHECK(Quantity >= 0),
+  A_ID NUMERIC(10) NOT NULL,
+  PRIMARY KEY (Inventory_ID),
+  FOREIGN KEY (Item_ID) REFERENCES ITEMS(Item_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+  FOREIGN KEY (A_ID) REFERENCES ADMIN(A_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+);
+
+CREATE TABLE STORAGE
+(
+  S_ID NUMERIC(6) NOT NULL,
+  Item_ID NUMERIC(3) NOT NULL,
+  Stored_Qty INT NOT NULL CHECK (Stored_Qty >= 0),
+  Inventory_ID NUMERIC(4) NOT NULL,
+  PRIMARY KEY (S_ID),
+  FOREIGN KEY (Inventory_ID) REFERENCES INVENTORY(Inventory_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+  FOREIGN KEY (Item_ID) REFERENCES ITEMS(Item_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+);
+
+CREATE TABLE ORDERS
+(
+  Order_ID NUMERIC(5) NOT NULL,
+  Item_ID NUMERIC(3) NOT NULL,
+  Order_Qty INT NOT NULL,	
+  Delivery_date DATE,
+  Request_date DATE NOT NULL,
+  S_ID NUMERIC(6) NOT NULL,
+  A_ID NUMERIC(10) NOT NULL,
+  PRIMARY KEY (Order_ID),
+  FOREIGN KEY (Item_ID) REFERENCES ITEMS(Item_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+  FOREIGN KEY (S_ID) REFERENCES STORAGE(S_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+  FOREIGN KEY (A_ID) REFERENCES ADMIN(A_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+);
+
+CREATE TABLE SHIPMENT
+(
+  Order_ID NUMERIC(5) NOT NULL,
+  S_Date DATE NOT NULL,
+  PRIMARY KEY (Order_ID),
+  FOREIGN KEY (Order_ID) REFERENCES ORDERS(Order_ID)
+);
+
+CREATE TABLE Monitors
+(
+  A_ID NUMERIC(10) NOT NULL,
+  S_ID NUMERIC(6) NOT NULL,
+  Loc_ID NUMERIC(2) NOT NULL,
+  PRIMARY KEY (A_ID, S_ID),	
+  FOREIGN KEY (A_ID) REFERENCES ADMIN(A_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+  FOREIGN KEY (S_ID) REFERENCES STORAGE(S_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+  FOREIGN KEY (Loc_ID) REFERENCES LOCATIONS(Loc_ID)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+);
+
+
+CREATE TABLE LOCATIONS
+(
+  Loc_ID NUMERIC(2) NOT NULL,
+  Location VARCHAR(10) NOT NULL,
+  PRIMARY KEY (Loc_ID)
+);
+
+
+INSERT INTO ADMIN VALUES
+(1003165999 , 'Rakesh Gupta' , 'rakeshgupta456@pes.edu' , '#21, Church street, Bangalore', 5834992456),
+(2007657138 , 'Animeha Shah' , 'animax23@yahoo.com' , 'A-1512, Wuthering heights, RR nagar, Bangalore', 9416819176),
+(7001568165 , 'Srinath Reddy' , 'srini4125reddy@gmail.com' , '#31, Gopishankar layout, Bangalore', 6316703468),
+(6004328643 , 'Eshaan Patel' , 'eshaanpatelxyz@gmail.com' , '749-21, SNN towers, Akshayanagar, Bangalore', 7654328915),
+(5004367537 , 'Sneha Rao' , 'sneharao@pes.edu' , '#378, Bilekahalli, Bangalore', 8456329764);
+
+
+INSERT INTO ITEMS VALUES
+(321 , 'Apples' , 'Fresh seasonal Fuji apples', 2007657138),
+(567 , 'Oranges' , 'Large size oranges for fresh juices' , 7001568165),
+(946 , 'Watermelons' , 'Fresh large watermelons', 7001568165),
+(726 , 'CerealX' , 'Popular cereal brand, stock up frequently', 1003165999 ),
+(675 , 'Bread' , 'Freshly baked bread for sandwitches', 2007657138),
+(834 , 'Milk' , 'Milk cartons, best quality', 5004367537),
+(116 , 'Pickle' , 'Five varieties, popular brand', 6004328643);
+
+INSERT INTO INVENTORY VALUES
+(6425 , 567 , 50 , 7001568165),
+(8846 , 946 , 30 , 7001568165),
+(5763 , 726 , 20 , 1003165999),
+(1429 , 834 , 10 , 5004367537);
+
+
+INSERT INTO STORAGE VALUES
+(176583 , 567 , 300 , 6425),
+(240359 , 321 , 500 , null),
+(814657 , 946 , 200 , 8846),
+(648234 , 726 , 100 , 5763),
+(346529 , 726 , 200 , 5763),
+(943578 , 834 , 300 , 1429),
+(653248 , 675 , 400 , null),
+(556732 , 116 , 150 , null);
+
+
+INSERT INTO ORDERS VALUES
+(12345 , 116 , 150 , '2020-02-27' , '2020-02-13' , 556732, 6004328643),
+(23456 , 946 , 100 , '2020-03-20' , '2020-03-17' ,  814657, 7001568165),
+(44653 , 675 , 200 , '2020-03-22' , '2020-03-17' ,  653248, 2007657138),
+(72653 , 726 , 100 , null , '2020-04-03' , 346529, 1003165999),
+(95762 , 321 , 250 , null , '2020-04-03' , 240359 , 2007657138);
+
+INSERT INTO SHIPMENT VALUES
+(72653 , '2020-04-07'),
+(95762 , '2020-04-05');
+
+
+INSERT INTO LOCATIONS VALUES
+(01 , 'Hassan'),
+(02 , 'Mangalore'),
+(03 , 'Mysore'),
+(04 , 'Bangalore');
+
+
+INSERT INTO Monitors VALUES
+(7001568165 , 176583 , 01),
+(7001568165 , 814657 , 04),
+(2007657138 , 240359 , 03),
+(1003165999 , 648234 , 02),
+(1003165999 , 346529 , 04),
+(5004367537 , 943578 , 01),
+(2007657138 , 653248 , 04),
+(6004328643 , 556732 , 04);
+
+
+
+DELIMITER $$
+CREATE TRIGGER storage_violation
+AFTER UPDATE ON STORAGE
+FOR EACH ROW BEGIN
+IF(NEW.Stored_Qty < 50) THEN
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Storage shortage, order more items';
+END IF;
+END$$
+DELIMITER;
+
+
+CREATE TRIGGER exceed_date 
+BEFORE INSERT ON ORDERS 
+FOR EACH ROW BEGIN 
+IF (NEW.Request_date > CURDATE()) THEN 
+SIGNAL SQLSTATE '45002' SET MESSAGE_TEXT = 'Invalid date entered'; 
+END IF; 
+END$$
+
+INSERT INTO ORDERS 
+VALUES (76543 , 946 , 100 , NULL , '2020-08-03' , 814657 , 7001568165);
+
+
+1) Simple query to check all request dates of respective items being shipped
+SELECT O.Request_date, I.Item_name
+FROM ITEMS I,
+ORDERS O RIGHT OUTER JOIN SHIPMENT AS H
+ON O.Order_ID = H.Order_ID
+WHERE I.Item_ID = O.Item_ID;
+
+
+2) Give the item names of all ordered items in ascending alphabetical order.
+SELECT I.Item_name
+FROM ITEMS I, ORDERS O
+WHERE I.Item_ID = O.Item_ID
+GROUP BY O.Order_ID
+ORDER BY 1;
+
+
+
+3) To show all locations which hold more than 300 units of any item
+SELECT L.Location
+FROM LOCATIONS L, Monitors M, STORAGE S
+WHERE M.Loc_ID = L.Loc_ID AND
+M.S_ID = S.S_ID AND
+S.Stored_Qty > 300
+GROUP BY L.Loc_ID;
+
+
+
+4) SQL Query to show which admin is responsible for taking care of which location
+SELECT A.A_Name, L.Location
+FROM ADMIN A, LOCATIONS L
+WHERE EXISTS
+(SELECT *
+FROM Monitors M
+WHERE M.A_ID = A.A_ID AND
+M.Loc_ID = L.Loc_ID);
+
+
+
+
+5) Select all item names which are not present in the inventory.
+SELECT I.Item_name
+FROM ITEMS I
+WHERE NOT EXISTS(
+SELECT *
+FROM INVENTORY K
+WHERE I.Item_ID = K.Item_ID);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
